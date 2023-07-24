@@ -3,17 +3,20 @@ package auth
 import (
 	"context"
 	"goGraph/cache"
+	"net/http"
 	"os"
 
 	"github.com/AzureAD/microsoft-authentication-library-for-go/apps/public"
 	"github.com/joho/godotenv"
 )
 
-func GetToken() (string, error) {
+var Token string
+
+func GetToken() error {
 	// Load environment variables
 	err := godotenv.Load()
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	clientId := os.Getenv("CLIENT_ID")
@@ -24,7 +27,7 @@ func GetToken() (string, error) {
 
 	client, err := public.New(clientId, public.WithCache(&tokenCache), public.WithAuthority("https://login.windows.net/"+tenantId))
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	ctx := context.Background()
@@ -33,7 +36,7 @@ func GetToken() (string, error) {
 	var result public.AuthResult
 	scopes := []string{"https://graph.microsoft.com/.default"}
 	if err != nil {
-		return "", err
+		return err
 	}
 	if len(accounts) > 0 {
 		// There may be more accounts; here we assume the first one is wanted.
@@ -44,9 +47,31 @@ func GetToken() (string, error) {
 		// Failed cache, authenticate a user with another AcquireToken* method
 		result, err = client.AcquireTokenInteractive(ctx, scopes)
 		if err != nil {
-			return "", err
+			return err
 		}
 	}
 
-	return result.AccessToken, nil
+	Token = result.AccessToken
+	return nil
+}
+
+func MakeRequest(method string, url string, body []byte) (*http.Response, error) {
+	if Token == "" {
+		err := GetToken()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+Token)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+
+	return client.Do(req)
 }

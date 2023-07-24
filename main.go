@@ -1,49 +1,30 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"goGraph/auth"
-	"io"
-	"net/http"
+	"goGraph/models"
 )
 
-type User struct {
-	Id          string `json:"id"`
-	DisplayName string `json:"displayName"`
-	Email       string `json:"mail"`
-}
-
 func main() {
-
-	token, err := auth.GetToken()
+	currentUser, err := models.GetUser()
 	if err != nil {
-		fmt.Printf("Error getting token: %v\n", err)
-		return
+		fmt.Printf("Error getting user: %v", err)
 	}
 
-	// API call to Graph
-	req, _ := http.NewRequest("GET", "https://graph.microsoft.com/v1.0/me", nil)
-	req.Header.Add("Authorization", "Bearer "+token)
+	fmt.Printf("User: %v\n", currentUser.DisplayName)
+	fmt.Printf("Email: %v\n", currentUser.Email)
+	fmt.Printf("Id: %v\n", currentUser.Id)
 
-	response, err := http.DefaultClient.Do(req)
+	emails, err := models.GetEmails()
 	if err != nil {
-		fmt.Printf("Error making API call: %v\n", err)
-		return
-	}
-	defer response.Body.Close()
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		fmt.Printf("Error reading response body: %v\n", err)
-		return
+		fmt.Printf("Error getting emails: %v", err)
 	}
 
-	var user User
-	if err := json.Unmarshal(body, &user); err != nil {
-		fmt.Println("Error parsing response body:", err)
-		return
+	for _, email := range emails {
+		fmt.Printf("Subject: %v\n", email.Subject)
+		fmt.Printf("Body: %v\n", email.BodyPreview)
+		fmt.Printf("Sent: %v\n", email.Sent)
+		fmt.Printf("Recieved: %v\n", email.Recieved)
+		fmt.Println()
 	}
-
-	fmt.Println(response.Status)
-	fmt.Println(user.DisplayName)
 }
