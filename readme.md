@@ -1,5 +1,5 @@
 # Go Graph Helper
-An simple example of how to authenticate users interactively (supports MFA) with Azure AD/Micrsoft Entra and then call the Microsoft Graph API from a golang application.
+A simple example of how to authenticate users interactively (supports MFA) with Azure AD/Microsoft Entra and then call the Microsoft Graph API from a Golang application.
 
 ### Getting Started
 1. Create an Azure AD application following the steps [here](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-register-app). Secrets/certificates are not required for user authentication.
