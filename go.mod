@@ -3,7 +3,7 @@ module goGraph
 go 1.20
 
 require (
-	github.com/AzureAD/microsoft-authentication-library-for-go v1.4.1
+	github.com/AzureAD/microsoft-authentication-library-for-go v1.6.0
 	github.com/joho/godotenv v1.5.1
 )
 
